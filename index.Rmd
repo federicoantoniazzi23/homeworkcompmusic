@@ -6,15 +6,153 @@ output:
     storyboard: true
 ---
 
-### Introduction
+```{r}
+library(spotifyr)
+library(tidyverse)
+library(plotly)
+```
 
-Welcome!
 
-### Description
+### What About My Corpus?
 
-it goes like this.
+My Corpus aim is to analyze the catalougue of Italian band España Circo Este, a band that I actually work with as a stage-tech and light-engineer.
+I'll try to focus on the distinction between their first two studio albums with the latest two, since there was an important shifting between a heavier and raw sound to a much more pop-indie approach to the production.
+The band also relies a lot on live shows across all Europe to promote their music, an they published to Live Album. I'll try to figure out in which area their music is more popular and if some releases are more strong in particular areas.
 
-### Ending
+```{r, echo=FALSE, out.width='1%', fig.align='down'}
+library(knitr)
+include_graphics("fotor.png")
 
-That's it.
+```
+
+
+
+
+
+### A quick look around España Circo Este's discography
+
+The graph is showing an overall look at España Circo Este's discography: in a column on the side we can see a list of all of the band's album, singles and Eps, by click on the name of the selected release, we can hide the related songs on the graph, so that it can be easier to make a comparison between two or three album of our choice. If we click on a dot we can see what song it represent and also the exact values of some of the song's features such as popularity, valence, release date etc...
+
+```{r "A quick look around España Circo Este's discography", fig.width=8, fig.height=6}
+library(ggplot2)
+library(plotly)
+library(tidyverse)
+library(spotifyr)
+
+# Ottenere i dati della playlist
+fulldiscography <- get_playlist_audio_features("", "7mATWeN6t4nSbVrqdppdr4")
+
+# Creazione del grafico ggplot2
+gg <- ggplot(fulldiscography, aes( color = track.album.name, text = paste("Track Name:", track.name, "<br>",
+                                                                                                                                          "Release Date:", track.album.release_date), x = valence, y = danceability,size = track.popularity)) +
+  geom_point(alpha = 0.4) +
+  labs(title = "A quick look around España Circo Este's discography")  # Titolo del grafico
+
+# Trasformazione in un grafico interattivo con plotly
+gg <- ggplotly(gg)
+
+# Aggiunta di interattività per visualizzare un solo parametro alla volta del gruppo track.album.name
+gg <- htmlwidgets::onRender(gg, "
+  function(el, x) {
+    el.on('plotly_click', function(eventData) {
+      var albumName = eventData.points[0].data.customdata[0];
+      var traces = [];
+      for(var i = 0; i < x.data.length; i++) {
+        if(x.data[i].name == albumName) {
+          traces.push(x.data[i]);
+        }
+      }
+      Plotly.restyle(el.id, 'visible', 'legendonly', Array.from({length: x.data.length}, (_, i) => i));
+      Plotly.restyle(el.id, 'visible', true, traces[0].index);
+    });
+  }
+")
+
+gg
+gg
+
+
+```
+
+### "La Mia Rivolta" Chromagrame
+
+On this page we can see a Chromagrame for the track "La Mia Rivolta", the most popular track from España Circo Este.
+The graph is made interactive, so that by passing the mouse on it we can see the exact value of a pitch class in an exact moment of the audio track.
+It is also possible to select an area of the graph to zoom in multiple time, to better see the graph results. 
+
+```{r}
+library(ggplot2)
+library(plotly)
+library(compmus)
+library(htmlwidgets)
+library(ggplot2)
+library(plotly)
+library(tidyverse)
+library(spotifyr)
+library(dplyr)
+library(tibble)
+library(compmus)
+library(ggplot2)
+library(plotly)
+library(tidyverse)
+library(spotifyr)
+library(dplyr)
+library(tibble)
+library(compmus)
+
+# Ottenere i dati
+lamiarivolta <- get_tidy_audio_analysis("0IEWeOIbR1Nn5FxRZ2NsRJ") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+# Modificare i dati
+lamiarivolta <- lamiarivolta %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma()
+
+# Creare il grafico
+plot <- ggplot(
+  lamiarivolta,
+  aes(
+    x = start + duration / 2,
+    width = duration,
+    y = pitch_class,
+    fill = value
+  )
+) +
+  geom_tile() +
+  labs(
+    x = "Time (s)",
+    y = "Pitch Class",
+    fill = "Magnitude",
+    title = "Chroma Analysis of Track 'La Mia Rivolta'"
+  ) +
+  theme_minimal() +
+  scale_fill_viridis_c() +
+  theme(
+    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
+    plot.title = element_text(size = 14, face = "bold")
+  ) +
+  coord_fixed(ratio = 9.3) # Impostare il rapporto d'aspetto a 2:1
+
+# Convertire il grafico in un grafico interattivo con plotly
+plot_interattivo <- ggplotly(plot)
+
+# Aggiungere interattività per zoomare su un singolo secondo
+onRender(plot_interattivo, '
+  function(el) {
+    el.on("plotly_relayout", function(eventData) {
+      if (eventData["xaxis.range[1]"] - eventData["xaxis.range[0]"] < 1) {
+        Plotly.relayout(el, "xaxis.range", [Math.ceil(eventData["xaxis.range[0]"]), Math.ceil(eventData["xaxis.range[0]"]) + 1]);
+      }
+    });
+  }
+')
+
+# Visualizza il grafico interattivo
+print(plot_interattivo)
+
+```
+
 
