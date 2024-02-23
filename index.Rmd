@@ -5,6 +5,7 @@ output:
   flexdashboard::flex_dashboard:
     storyboard: true
     html_document:
+    self_contained: true
     fig_width: 6  # 100
     fig_height: 4  # 100
 ---
@@ -25,6 +26,10 @@ The band also relies a lot on live shows across all Europe to promote their musi
 ```{r, echo=FALSE}
 library(knitr)
 ```
+![España Circo Este](fotor.jpg){width=300px}  </center>
+
+
+
 
 
 
