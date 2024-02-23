@@ -4,6 +4,9 @@ date: "2024-02-21"
 output: 
   flexdashboard::flex_dashboard:
     storyboard: true
+    html_document:
+    fig_width: 6  # 100
+    fig_height: 4  # 100
 ---
 
 ```{r}
@@ -19,12 +22,9 @@ My Corpus aim is to analyze the catalougue of Italian band España Circo Este, a
 I'll try to focus on the distinction between their first two studio albums with the latest two, since there was an important shifting between a heavier and raw sound to a much more pop-indie approach to the production.
 The band also relies a lot on live shows across all Europe to promote their music, an they published to Live Album. I'll try to figure out in which area their music is more popular and if some releases are more strong in particular areas.
 
-```{r, echo=FALSE, out.width='1%', fig.align='down'}
+```{r, echo=FALSE}
 library(knitr)
-include_graphics("fotor.png")
-
 ```
-
 
 
 
@@ -33,20 +33,23 @@ include_graphics("fotor.png")
 
 The graph is showing an overall look at España Circo Este's discography: in a column on the side we can see a list of all of the band's album, singles and Eps, by click on the name of the selected release, we can hide the related songs on the graph, so that it can be easier to make a comparison between two or three album of our choice. If we click on a dot we can see what song it represent and also the exact values of some of the song's features such as popularity, valence, release date etc...
 
-```{r "A quick look around España Circo Este's discography", fig.width=8, fig.height=6}
+```{r}
 library(ggplot2)
 library(plotly)
 library(tidyverse)
 library(spotifyr)
 
 # Ottenere i dati della playlist
-fulldiscography <- get_playlist_audio_features("", "7mATWeN6t4nSbVrqdppdr4")
+fulldiscography <- get_playlist_audio_features("YOUR_PLAYLIST_ID_HERE", "7mATWeN6t4nSbVrqdppdr4")
 
 # Creazione del grafico ggplot2
-gg <- ggplot(fulldiscography, aes( color = track.album.name, text = paste("Track Name:", track.name, "<br>",
-                                                                                                                                          "Release Date:", track.album.release_date), x = valence, y = danceability,size = track.popularity)) +
+gg <- ggplot(fulldiscography, aes(color = track.album.name, 
+                                   text = paste("Track Name:", track.name, "<br>",
+                                                "Release Date:", track.album.release_date),
+                                   x = valence, y = danceability, size = track.popularity)) +
   geom_point(alpha = 0.4) +
-  labs(title = "A quick look around España Circo Este's discography")  # Titolo del grafico
+  labs(title = "A quick look around España Circo Este's discography") # Titolo del grafico
+
 
 # Trasformazione in un grafico interattivo con plotly
 gg <- ggplotly(gg)
@@ -68,11 +71,14 @@ gg <- htmlwidgets::onRender(gg, "
   }
 ")
 
+# Impostare le dimensioni dell'immagine
+gg <- layout(gg, width = 800, height = 400)
 gg
-gg
-
 
 ```
+
+
+
 
 ### "La Mia Rivolta" Chromagrame
 
