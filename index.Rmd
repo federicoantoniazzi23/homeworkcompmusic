@@ -10,24 +10,125 @@ output:
     fig_height: 4  # 100
 ---
 
+### Homework: "Self similarity matrices of two live version of 'Mi Vida Samba'"
+
+
+
 ```{r}
-library(spotifyr)
 library(tidyverse)
-library(plotly)
+library(spotifyr)
+library(compmus)
+library(patchwork)
+
+# Definisci la funzione per creare il grafico
+create_plot <- function(data) {
+  data |>
+    ggplot(
+      aes(
+        x = xstart + xduration / 2,
+        width = xduration,
+        y = ystart + yduration / 2,
+        height = yduration,
+        fill = d
+      )
+    ) +
+    geom_tile() +
+    coord_fixed() +
+    facet_wrap(~type) +
+    scale_fill_viridis_c(option = "E", guide = "none") +
+    scale_x_continuous(breaks = seq(min(0), max(197), by = 50)) +
+    scale_y_continuous(breaks = seq(min(0), max(197), by = 50)) +
+    theme_classic() + 
+    labs(x = "", y = "")
+}
+
+# Ottieni i dati per i due brani
+mividasamba18 <-
+  get_tidy_audio_analysis("61DQ7TpYb1iOT15Rg410rc") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+
+mividasamba23 <-
+  get_tidy_audio_analysis("26qkyInGQ6gZ7pdj9Ks7kb") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+
+# Calcola le similarità e crea i grafici
+plot1 <- bind_rows(
+  mividasamba18 |> 
+    compmus_self_similarity(pitches, "aitchison") |> 
+    mutate(d = d / max(d), type = "Chroma"),
+  mividasamba18 |> 
+    compmus_self_similarity(timbre, "manhattan") |> 
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  create_plot()
+
+plot2 <- bind_rows(
+  mividasamba23 |> 
+    compmus_self_similarity(pitches, "aitchison") |> 
+    mutate(d = d / max(d), type = "Chroma"),
+  mividasamba23 |> 
+    compmus_self_similarity(timbre, "manhattan") |> 
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  create_plot()
+
+# Mostra i grafici uno sotto l'altro
+plot1 / plot2
+
 ```
+
+***
+
+The two graphs are showing a self-similarity matrices analyzise on two different live rendition of the song "Mi Vida Samba" by Espana Circo Este. The interesting thing about this song is that it was never featured on any of the studio album by the band, but it's played in every single shows of the band. ECE's published two live album "Tour della Maleducazione", recorded while they were touring their first two album, and "Da Machu Picchu a Ushaia: il Bootleg", that was recorded on the tour for their third and fourth studio album. Between the first two album and the latest two there was a huge shift in the band's approach to songwriting: they started to pay more attention to production, sound-design and their album started to be also more indie-pop and less tango-punk focused. I thought that it would be interesting to see how this changes affected also their live performance.
+First thing I noticed is that the 2023 version shows more clearly the distinction from one section to another, and I think that this is also due to the fact that the overall quality of the recording was improved, giving the track a huge, fat and compressed master.
+The oldest version also shows a more repetitive structure, moving from the intro/verse to the chorus and then to a long series of different musical stack and solo from the members of the group, on the timbre graph we can also see an evident yellow line at the end of the song, that represent a hardcore style outro, with the drums playing blastbeats. 
+On the other hand the 2023 version shows a more various palette of sections. The newest version in fact feature a new member on the trumpet in the group line up, that help the instrumentation to be more various, and a classical guitaris palying a flamenco style pattern. The timbre graph shows us that there are more microsections than in the 2018 version, especially in the center of the song.
 
 
 ### What About My Corpus?
 
-My Corpus aim is to analyze the catalougue of Italian band España Circo Este, a band that I actually work with as a stage-tech and light-engineer.
-I'll try to focus on the distinction between their first two studio albums with the latest two, since there was an important shifting between a heavier and raw sound to a much more pop-indie approach to the production.
-The band also relies a lot on live shows across all Europe to promote their music, an they published to Live Album. I'll try to figure out in which area their music is more popular and if some releases are more strong in particular areas.
+
 
 ```{r, echo=FALSE}
 library(knitr)
 ```
-![España Circo Este](fotor.jpg){width=300px}  </center>
 
+***
+
+My Corpus aim is to analyze the catalougue of Italian band España Circo Este, a band that I actually work with as a stage-tech and light-engineer.
+I'll try to focus on the distinction between their first two studio albums with the latest two, since there was an important shifting between a heavier and raw sound to a much more pop-indie approach to the production, and how this changed the band performances and compositions.
 
 
 
@@ -36,7 +137,8 @@ library(knitr)
 
 ### A quick look around España Circo Este's discography
 
-The graph is showing an overall look at España Circo Este's discography: in a column on the side we can see a list of all of the band's album, singles and Eps, by click on the name of the selected release, we can hide the related songs on the graph, so that it can be easier to make a comparison between two or three album of our choice. If we click on a dot we can see what song it represent and also the exact values of some of the song's features such as popularity, valence, release date etc...
+
+
 
 ```{r}
 library(ggplot2)
@@ -82,88 +184,103 @@ gg
 
 ```
 
+***
+
+The graph is showing an overall look at España Circo Este's discography: in a column on the side we can see a list of all of the band's album, singles and Eps, by click on the name of the selected release, we can hide the related songs on the graph, so that it can be easier to make a comparison between two or three album of our choice. If we click on a dot we can see what song it represent and also the exact values of some of the song's features such as popularity, valence, release date etc...
 
 
-
-### "La Mia Rivolta" Chromagrame
-
-On this page we can see a Chromagrame for the track "La Mia Rivolta", the most popular track from España Circo Este.
-The graph is made interactive, so that by passing the mouse on it we can see the exact value of a pitch class in an exact moment of the audio track.
-It is also possible to select an area of the graph to zoom in multiple time, to better see the graph results. 
+### Some chromagrame about some slow songs
 
 ```{r}
-library(ggplot2)
-library(plotly)
-library(compmus)
-library(htmlwidgets)
-library(ggplot2)
-library(plotly)
-library(tidyverse)
-library(spotifyr)
-library(dplyr)
-library(tibble)
-library(compmus)
-library(ggplot2)
-library(plotly)
-library(tidyverse)
-library(spotifyr)
-library(dplyr)
-library(tibble)
-library(compmus)
+library(patchwork)
 
-# Ottenere i dati
-lamiarivolta <- get_tidy_audio_analysis("0IEWeOIbR1Nn5FxRZ2NsRJ") %>%
+lrea_data <-
+  get_tidy_audio_analysis("2kSVoQ64TKW9j1qBotXSEv") %>%
   select(segments) %>%
   unnest(segments) %>%
   select(start, duration, pitches)
 
-# Modificare i dati
-lamiarivolta <- lamiarivolta %>%
+lrea_plot <- lrea_data %>%
   mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
-  compmus_gather_chroma()
-
-# Creare il grafico
-plot <- ggplot(
-  lamiarivolta,
-  aes(
-    x = start + duration / 2,
-    width = duration,
-    y = pitch_class,
-    fill = value
-  )
-) +
+  compmus_gather_chroma() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
   geom_tile() +
-  labs(
-    x = "Time (s)",
-    y = "Pitch Class",
-    fill = "Magnitude",
-    title = "Chroma Analysis of Track 'La Mia Rivolta'"
-  ) +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   theme_minimal() +
-  scale_fill_viridis_c() +
-  theme(
-    axis.text.x = element_text(size = 8, angle = 45, hjust = 1),
-    plot.title = element_text(size = 14, face = "bold")
+  scale_fill_viridis_c()
+
+centometri_data <- 
+  get_tidy_audio_analysis("47AMXlXXmmH19SFgxKV54N") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+centometri_plot <- centometri_data %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
   ) +
-  coord_fixed(ratio = 9.3) # Impostare il rapporto d'aspetto a 2:1
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c()
 
-# Convertire il grafico in un grafico interattivo con plotly
-plot_interattivo <- ggplotly(plot)
+# Combina i due grafici uno sotto l'altro
+combined_plot <- wrap_plots(lrea_plot, centometri_plot, nrow = 2)
 
-# Aggiungere interattività per zoomare su un singolo secondo
-onRender(plot_interattivo, '
-  function(el) {
-    el.on("plotly_relayout", function(eventData) {
-      if (eventData["xaxis.range[1]"] - eventData["xaxis.range[0]"] < 1) {
-        Plotly.relayout(el, "xaxis.range", [Math.ceil(eventData["xaxis.range[0]"]), Math.ceil(eventData["xaxis.range[0]"]) + 1]);
-      }
-    });
-  }
-')
+# Visualizza il grafico combinato
+combined_plot
 
-# Visualizza il grafico interattivo
-print(plot_interattivo)
+
 
 ```
+
+
+
+
+***
+
+In these Chromagrams I'm comparing two different songs from the band's discography. They have both a slow tempo, which is a bit unusual for ECE, a more songwriter type of arrangement, and an overall sombre timbre. The first track is the last one from ECE's first studio album, and it's really much more straightforward, production-wise, we can see very clearly that the song is in C, and even if there are quite a few harmonics, it is clear that the melody of the song relies on some repetitive pattern, that have in common the C chords at the beginning.
+The second song is from their third records, and it shows a huge amount of harmonics that make more difficult to understand which chords or notes are being played, and I think that this is also due to the fact that from this records on, the band started experimenting more with digital recording, production and sound-design. We can see in certain points of the track that there are some heavier marks on the E notes: they corrispond to the starting or the ending of section, like for example the first chorus, somewhere around 45s.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
