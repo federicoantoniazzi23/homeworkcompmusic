@@ -116,19 +116,6 @@ stomaco <-
         method = "mean", norm = "manhattan"
       )
   )
-stomaco |> 
-  compmus_match_pitch_template(
-    chord_templates,         # Change to chord_templates if descired
-    method = "euclidean",  # Try different distance metrics
-    norm = "manhattan"     # Try different norms
-  ) |>
-  ggplot(
-    aes(x = start + duration / 2, width = duration, y = name, fill = d)
-  ) +
-  geom_tile() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
-  labs(x = "Time (s)", y = "")
 
 ska <-
   get_tidy_audio_analysis("66lEtezQyyWo04rSqPK9h0") |>
@@ -142,20 +129,15 @@ ska <-
         method = "mean", norm = "manhattan"
       )
   )
-ska |> 
-  compmus_match_pitch_template(
-    chord_templates,         # Change to chord_templates if descired
-    method = "euclidean",  # Try different distance metrics
-    norm = "manhattan"     # Try different norms
-  ) |>
-  ggplot(
-    aes(x = start + duration / 2, width = duration, y = name, fill = d)
-  ) +
-  geom_tile() +
-  scale_fill_viridis_c(guide = "none") +
-  theme_minimal() +
-  labs(x = "Time (s)", y = "") + ggtitle('Lo Stomaco e il Bullone')
+
 library(cowplot)
+
+library(tidyverse)
+library(compmus)
+library(spotifyr)
+library(cowplot)
+
+# Your existing code for data preparation and plotting...
 
 # Codice per il primo grafico 'stomaco'
 stomaco_plot <- stomaco |> 
@@ -170,9 +152,9 @@ stomaco_plot <- stomaco |>
   geom_tile() +
   scale_fill_viridis_c(guide = "none") +
   theme_minimal() +
-  labs(x = "Time (s)", y = "") 
+  labs(x = "Time (s)", y = "") + ggtitle('Lo Stomaco e il Bullone')
 
-# Codice per il secondo grafico 'ska'
+ 
 ska_plot <- ska |> 
   compmus_match_pitch_template(
     chord_templates,
@@ -188,11 +170,11 @@ ska_plot <- ska |>
   labs(x = "Time (s)", y = "") + ggtitle('Il Levare del Cielo e del Mare')
 
 # Visualizzazione dei grafici uno sotto l'altro
-plot_grid(stomaco_plot, ska_plot, nrow = 2)
-
-
+print(plot_grid(stomaco_plot, ska_plot, nrow = 2))
 
 ```
+
+
 
 ***
 This two Chordograms are about the intros for album two and four. The two tracks have a very different vibes but they both have an intro that serve to put the listeners in the mood. "Scienze della Maleducazione" might be Espana Circo Este heavier album, so the track starts with a heavy distorted riff, on the other hand "Ushuaia" is more etherogeneuos project, with the first track being a indie-ska tune with a mellow piano intro. It's easy for both tracks to follow the intro chords on the graph, while it's not that easy for "Il levare del cielo e del mare" to have its chords detected. 
@@ -207,9 +189,6 @@ In "Lo stomaco e il bullone" it's easier to see when the main riff is reproposed
 library(knitr)
 ```
 
-:
-
-<iframe width="560" height="315" src="https://www.youtube.com/watch?v=kZFtL1aoels" frameborder="0" allowfullscreen></iframe>
 
 ***
 
