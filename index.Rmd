@@ -92,7 +92,7 @@ plot1 <- bind_rows(
     compmus_self_similarity(timbre, "manhattan") |> 
     mutate(d = d / max(d), type = "Timbre")
 ) |>
-  create_plot()
+  create_plot() + ggtitle('Mi vida Samba - Live 2018')
 
 plot2 <- bind_rows(
   mividasamba23 |> 
@@ -102,7 +102,7 @@ plot2 <- bind_rows(
     compmus_self_similarity(timbre, "manhattan") |> 
     mutate(d = d / max(d), type = "Timbre")
 ) |>
-  create_plot()
+  create_plot() + ggtitle('Mi vida Samba - Live 2022')
 
 # Mostra i grafici uno sotto l'altro
 plot1 / plot2
@@ -214,7 +214,7 @@ lrea_plot <- lrea_data %>%
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   theme_minimal() +
-  scale_fill_viridis_c()
+  scale_fill_viridis_c() + ggtitle('La Revolucio Es l Amor')
 
 centometri_data <- 
   get_tidy_audio_analysis("47AMXlXXmmH19SFgxKV54N") %>%
@@ -236,7 +236,7 @@ centometri_plot <- centometri_data %>%
   geom_tile() +
   labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
   theme_minimal() +
-  scale_fill_viridis_c()
+  scale_fill_viridis_c() + ggtitle('Cento Metri')
 
 # Combina i due grafici uno sotto l'altro
 combined_plot <- wrap_plots(lrea_plot, centometri_plot, nrow = 2)
