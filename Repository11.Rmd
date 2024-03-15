@@ -1,0 +1,477 @@
+---
+title: "My Portfolio"
+date: "2024-02-21"
+output: 
+  flexdashboard::flex_dashboard:
+    storyboard: true
+    html_document:
+    self_contained: true
+    fig_width: 6  # 100
+    fig_height: 4  # 100
+---
+
+### Chordgram Intro
+
+```{r}
+library(tidyverse)
+circshift <- function(v, n) {
+  if (n == 0) v else c(tail(v, n), head(v, -n))
+}
+
+#      C     C#    D     Eb    E     F     F#    G     Ab    A     Bb    B
+major_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    0,    0)
+minor_chord <-
+  c(   1,    0,    0,    1,    0,    0,    0,    1,    0,    0,    0,    0)
+seventh_chord <-
+  c(   1,    0,    0,    0,    1,    0,    0,    1,    0,    0,    1,    0)
+
+major_key <-
+  c(6.35, 2.23, 3.48, 2.33, 4.38, 4.09, 2.52, 5.19, 2.39, 3.66, 2.29, 2.88)
+minor_key <-
+  c(6.33, 2.68, 3.52, 5.38, 2.60, 3.53, 2.54, 4.75, 3.98, 2.69, 3.34, 3.17)
+
+chord_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:7", circshift(seventh_chord, 6),
+    "Gb:maj", circshift(major_chord, 6),
+    "Bb:min", circshift(minor_chord, 10),
+    "Db:maj", circshift(major_chord, 1),
+    "F:min", circshift(minor_chord, 5),
+    "Ab:7", circshift(seventh_chord, 8),
+    "Ab:maj", circshift(major_chord, 8),
+    "C:min", circshift(minor_chord, 0),
+    "Eb:7", circshift(seventh_chord, 3),
+    "Eb:maj", circshift(major_chord, 3),
+    "G:min", circshift(minor_chord, 7),
+    "Bb:7", circshift(seventh_chord, 10),
+    "Bb:maj", circshift(major_chord, 10),
+    "D:min", circshift(minor_chord, 2),
+    "F:7", circshift(seventh_chord, 5),
+    "F:maj", circshift(major_chord, 5),
+    "A:min", circshift(minor_chord, 9),
+    "C:7", circshift(seventh_chord, 0),
+    "C:maj", circshift(major_chord, 0),
+    "E:min", circshift(minor_chord, 4),
+    "G:7", circshift(seventh_chord, 7),
+    "G:maj", circshift(major_chord, 7),
+    "B:min", circshift(minor_chord, 11),
+    "D:7", circshift(seventh_chord, 2),
+    "D:maj", circshift(major_chord, 2),
+    "F#:min", circshift(minor_chord, 6),
+    "A:7", circshift(seventh_chord, 9),
+    "A:maj", circshift(major_chord, 9),
+    "C#:min", circshift(minor_chord, 1),
+    "E:7", circshift(seventh_chord, 4),
+    "E:maj", circshift(major_chord, 4),
+    "G#:min", circshift(minor_chord, 8),
+    "B:7", circshift(seventh_chord, 11),
+    "B:maj", circshift(major_chord, 11),
+    "D#:min", circshift(minor_chord, 3)
+  )
+
+key_templates <-
+  tribble(
+    ~name, ~template,
+    "Gb:maj", circshift(major_key, 6),
+    "Bb:min", circshift(minor_key, 10),
+    "Db:maj", circshift(major_key, 1),
+    "F:min", circshift(minor_key, 5),
+    "Ab:maj", circshift(major_key, 8),
+    "C:min", circshift(minor_key, 0),
+    "Eb:maj", circshift(major_key, 3),
+    "G:min", circshift(minor_key, 7),
+    "Bb:maj", circshift(major_key, 10),
+    "D:min", circshift(minor_key, 2),
+    "F:maj", circshift(major_key, 5),
+    "A:min", circshift(minor_key, 9),
+    "C:maj", circshift(major_key, 0),
+    "E:min", circshift(minor_key, 4),
+    "G:maj", circshift(major_key, 7),
+    "B:min", circshift(minor_key, 11),
+    "D:maj", circshift(major_key, 2),
+    "F#:min", circshift(minor_key, 6),
+    "A:maj", circshift(major_key, 9),
+    "C#:min", circshift(minor_key, 1),
+    "E:maj", circshift(major_key, 4),
+    "G#:min", circshift(minor_key, 8),
+    "B:maj", circshift(major_key, 11),
+    "D#:min", circshift(minor_key, 3)
+  )
+library(ggplot2)
+library(tidyverse)
+library(compmus)
+library(spotifyr)
+library(cowplot)
+stomaco <-
+  get_tidy_audio_analysis("5ITeFWtBRXwKgngzeYoy3v") |>
+  compmus_align(beats, segments) |>
+  select(beats) |>
+  unnest(beats) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      )
+  )
+
+ska <-
+  get_tidy_audio_analysis("66lEtezQyyWo04rSqPK9h0") |>
+  compmus_align(beats, segments) |>
+  select(beats) |>
+  unnest(beats) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "mean", norm = "manhattan"
+      )
+  )
+
+library(cowplot)
+
+library(tidyverse)
+library(compmus)
+library(spotifyr)
+library(cowplot)
+
+# Your existing code for data preparation and plotting...
+
+# Codice per il primo grafico 'stomaco'
+stomaco_plot <- stomaco |> 
+  compmus_match_pitch_template(
+    chord_templates,
+    method = "euclidean",
+    norm = "manhattan"
+  ) |>
+  ggplot(
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "") + ggtitle('Lo Stomaco e il Bullone')
+
+ 
+ska_plot <- ska |> 
+  compmus_match_pitch_template(
+    chord_templates,
+    method = "euclidean",
+    norm = "manhattan"
+  ) |>
+  ggplot(
+    aes(x = start + duration / 2, width = duration, y = name, fill = d)
+  ) +
+  geom_tile() +
+  scale_fill_viridis_c(guide = "none") +
+  theme_minimal() +
+  labs(x = "Time (s)", y = "") + ggtitle('Il Levare del Cielo e del Mare')
+
+# Visualizzazione dei grafici uno sotto l'altro
+print(plot_grid(stomaco_plot, ska_plot, nrow = 2))
+
+```
+
+
+
+***
+This two Chordograms are about the intros for album two and four. The two tracks have a very different vibes but they both have an intro that serve to put the listeners in the mood. "Scienze della Maleducazione" might be Espana Circo Este heavier album, so the track starts with a heavy distorted riff, on the other hand "Ushuaia" is more etherogeneuos project, with the first track being a indie-ska tune with a mellow piano intro. It's easy for both tracks to follow the intro chords on the graph, while it's not that easy for "Il levare del cielo e del mare" to have its chords detected. 
+In "Lo stomaco e il bullone" it's easier to see when the main riff is reproposed in different sections on the song.
+
+
+
+### España Circo Este: A Journey through their Catalogue
+
+
+```{r, echo=FALSE}
+library(knitr)
+```
+
+
+***
+
+My Corpus aim is to analyze the catalougue of Italian band España Circo Este, a band that I actually work with as a stage-tech and light-engineer.
+I'll try to focus on the distinction between their first two studio albums with the latest two, since there was an important shifting between a heavier and raw sound to a much more pop-indie approach to the production, and how this changed the band performances and compositions.
+
+
+
+
+
+
+### A quick look around España Circo Este's discography
+
+```{r}
+library(ggplot2)
+library(plotly)
+library(tidyverse)
+library(spotifyr)
+
+# Ottenere i dati della playlist
+fulldiscography <- get_playlist_audio_features("YOUR_PLAYLIST_ID_HERE", "7mATWeN6t4nSbVrqdppdr4")
+
+# Creazione del grafico ggplot2
+gg <- ggplot(fulldiscography, aes(color = track.album.name, 
+                                   text = paste("Track Name:", track.name, "<br>",
+                                                "Release Date:", track.album.release_date),
+                                   x = valence, y = danceability, size = track.popularity)) +
+  geom_point(alpha = 0.4) +
+  labs(title = "A quick look around España Circo Este's discography") # Titolo del grafico
+
+
+# Trasformazione in un grafico interattivo con plotly
+gg <- ggplotly(gg)
+
+# Aggiunta di interattività per visualizzare un solo parametro alla volta del gruppo track.album.name
+gg <- htmlwidgets::onRender(gg, "
+  function(el, x) {
+    el.on('plotly_click', function(eventData) {
+      var albumName = eventData.points[0].data.customdata[0];
+      var traces = [];
+      for(var i = 0; i < x.data.length; i++) {
+        if(x.data[i].name == albumName) {
+          traces.push(x.data[i]);
+        }
+      }
+      Plotly.restyle(el.id, 'visible', 'legendonly', Array.from({length: x.data.length}, (_, i) => i));
+      Plotly.restyle(el.id, 'visible', true, traces[0].index);
+    });
+  }
+")
+
+# Impostare le dimensioni dell'immagine
+gg <- layout(gg, width = 800, height = 400)
+gg
+
+```
+
+***
+
+The graph is showing an overall look at España Circo Este's discography: in a column on the side we can see a list of all of the band's album, singles and Eps, by click on the name of the selected release, we can hide the related songs on the graph, so that it can be easier to make a comparison between two or three album of our choice. If we click on a dot we can see what song it represent and also the exact values of some of the song's features such as popularity, valence, release date etc...
+
+### Key and Mode Distribution throught time
+```{r}
+library(ggplot2)
+library(dplyr)
+library(plotly)
+
+# Assuming these URIs are correct, replace them with actual URIs
+# Replace "" with the actual URIs
+First_Two_Album <- get_playlist_audio_features("URI", "1rqoanqqiqiqw9jcENHb4S")
+Last_Two_Album <- get_playlist_audio_features("URI", "47zdRKU0Z0oCd8m05WrEOR")
+
+# Bind the dataframes and add a new column for category
+ecedisco <- bind_rows(
+  First_Two_Album %>% mutate(category = "First_Two_Album"),
+  Last_Two_Album %>% mutate(category = "Last_Two_Album")
+)
+
+# Calculate mode for each playlist
+first_mode <- as.integer(mean(First_Two_Album$key_templates == 0))
+post_mode <- as.integer(mean(Last_Two_Album$key_templates == 0))
+
+# Create dataframe with modes
+modes_df <- data.frame(category = c("First_Two_Album", "Last_Two_Album"),
+                       mode = c(first_mode, post_mode))
+
+# Merge modes with audio features
+First_Two_Album <- First_Two_Album %>% mutate(mode = first_mode)
+Last_Two_Album <- Last_Two_Album %>% mutate(mode = post_mode)
+
+# Create the histogram plot
+ggplot(ecedisco, aes(x = key, fill = as.factor(mode))) +
+  geom_tile(stat = "count", color = "black", size = 0.5) +
+  facet_wrap(~category) +
+  labs(x = "Key", y = "Count", fill = "Mode") +
+  scale_x_continuous(breaks = 0:11, labels = c("C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B")) +
+  scale_y_continuous(breaks = seq(0, max(table(ecedisco$key)), by = 1)) +
+  scale_fill_manual(values = c("0" = "skyblue", "1" = "lightcoral"), labels = c("minor", "major")) +  # Set labels for legend
+  theme(legend.position = "bottom")
+
+```
+
+***
+
+I used this graph to point out dome differences in the composition of the first two studio albums and the latest two. I think that the first thing that we can notice is the lack of minor key song in the latest project: as I said before, this two records had a shift in composition, to a more pop and mellow sound.
+It's also interesting to notice that this two records have also a widest use of different key, in a smaller amount of tracks (sixteen against twenty-one in the first two album).
+In their earliest project the band was using a smaller palettes of keys: a third of the song from their first two albums are in the key of A minor.
+
+
+
+### Some chromagrame about some slow songs
+
+```{r}
+library(patchwork)
+
+lrea_data <-
+  get_tidy_audio_analysis("2kSVoQ64TKW9j1qBotXSEv") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+lrea_plot <- lrea_data %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c() + ggtitle('La Revolucio Es l Amor')
+
+centometri_data <- 
+  get_tidy_audio_analysis("47AMXlXXmmH19SFgxKV54N") %>%
+  select(segments) %>%
+  unnest(segments) %>%
+  select(start, duration, pitches)
+
+centometri_plot <- centometri_data %>%
+  mutate(pitches = map(pitches, compmus_normalise, "euclidean")) %>%
+  compmus_gather_chroma() %>%
+  ggplot(
+    aes(
+      x = start + duration / 2,
+      width = duration,
+      y = pitch_class,
+      fill = value
+    )
+  ) +
+  geom_tile() +
+  labs(x = "Time (s)", y = NULL, fill = "Magnitude") +
+  theme_minimal() +
+  scale_fill_viridis_c() + ggtitle('Cento Metri')
+
+# Combina i due grafici uno sotto l'altro
+combined_plot <- wrap_plots(lrea_plot, centometri_plot, nrow = 2)
+
+# Visualizza il grafico combinato
+combined_plot
+
+
+
+```
+
+
+
+
+***
+
+In these Chromagrams I'm comparing two different songs from the band's discography. They have both a slow tempo, which is a bit unusual for ECE, a more songwriter type of arrangement, and an overall sombre timbre. The first track is the last one from ECE's first studio album, and it's really much more straightforward, production-wise, we can see very clearly that the song is in C, and even if there are quite a few harmonics, it is clear that the melody of the song relies on some repetitive pattern, that have in common the C chords at the beginning.
+The second song is from their third records, and it shows a huge amount of harmonics that make more difficult to understand which chords or notes are being played, and I think that this is also due to the fact that from this records on, the band started experimenting more with digital recording, production and sound-design. We can see in certain points of the track that there are some heavier marks on the E notes: they corrispond to the starting or the ending of section, like for example the first chorus, somewhere around 45s.
+
+
+
+### Homework: "Self similarity matrices of two live version of 'Mi Vida Samba'"
+
+
+
+```{r}
+library(tidyverse)
+library(spotifyr)
+library(compmus)
+library(patchwork)
+
+# Definisci la funzione per creare il grafico
+create_plot <- function(data) {
+  data |>
+    ggplot(
+      aes(
+        x = xstart + xduration / 2,
+        width = xduration,
+        y = ystart + yduration / 2,
+        height = yduration,
+        fill = d
+      )
+    ) +
+    geom_tile() +
+    coord_fixed() +
+    facet_wrap(~type) +
+    scale_fill_viridis_c(option = "E", guide = "none") +
+    scale_x_continuous(breaks = seq(min(0), max(197), by = 50)) +
+    scale_y_continuous(breaks = seq(min(0), max(197), by = 50)) +
+    theme_classic() + 
+    labs(x = "", y = "")
+}
+
+# Ottieni i dati per i due brani
+mividasamba18 <-
+  get_tidy_audio_analysis("61DQ7TpYb1iOT15Rg410rc") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+
+mividasamba23 <-
+  get_tidy_audio_analysis("26qkyInGQ6gZ7pdj9Ks7kb") |>
+  compmus_align(bars, segments) |>
+  select(bars) |>
+  unnest(bars) |>
+  mutate(
+    pitches =
+      map(segments,
+        compmus_summarise, pitches,
+        method = "acentre", norm = "manhattan"
+      )
+  ) |>
+  mutate(
+    timbre =
+      map(segments,
+        compmus_summarise, timbre,
+        method = "mean"
+      )
+  )
+
+# Calcola le similarità e crea i grafici
+plot1 <- bind_rows(
+  mividasamba18 |> 
+    compmus_self_similarity(pitches, "aitchison") |> 
+    mutate(d = d / max(d), type = "Chroma"),
+  mividasamba18 |> 
+    compmus_self_similarity(timbre, "manhattan") |> 
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  create_plot() + ggtitle('Mi vida Samba - Live 2018')
+
+plot2 <- bind_rows(
+  mividasamba23 |> 
+    compmus_self_similarity(pitches, "aitchison") |> 
+    mutate(d = d / max(d), type = "Chroma"),
+  mividasamba23 |> 
+    compmus_self_similarity(timbre, "manhattan") |> 
+    mutate(d = d / max(d), type = "Timbre")
+) |>
+  create_plot() + ggtitle('Mi vida Samba - Live 2022')
+
+# Mostra i grafici uno sotto l'altro
+plot1 / plot2
+
+```
+
+
+***
+
+The two graphs are showing a self-similarity matrices analyzise on two different live rendition of the song "Mi Vida Samba" by Espana Circo Este. The interesting thing about this song is that it was never featured on any of the studio album by the band, but it's played in every single shows of the band. ECE's published two live album "Tour della Maleducazione", recorded while they were touring their first two album, and "Da Machu Picchu a Ushaia: il Bootleg", that was recorded on the tour for their third and fourth studio album. Between the first two album and the latest two there was a huge shift in the band's approach to songwriting: they started to pay more attention to production, sound-design and their album started to be also more indie-pop and less tango-punk focused. I thought that it would be interesting to see how this changes affected also their live performance.
+First thing I noticed is that the 2023 version shows more clearly the distinction from one section to another, and I think that this is also due to the fact that the overall quality of the recording was improved, giving the track a huge, fat and compressed master.
+The oldest version also shows a more repetitive structure, moving from the intro/verse to the chorus and then to a long series of different musical stack and solo from the members of the group, on the timbre graph we can also see an evident yellow line at the end of the song, that represent a hardcore style outro, with the drums playing blastbeats. 
+On the other hand the 2023 version shows a more various palette of sections. The newest version in fact feature a new member on the trumpet in the group line up, that help the instrumentation to be more various, and a classical guitaris palying a flamenco style pattern. The timbre graph shows us that there are more microsections than in the 2018 version, especially in the center of the song.
+
