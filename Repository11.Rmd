@@ -51,10 +51,14 @@ The two arrengements are very different, but an important thing to know is that 
 ```{r}
 library(tidyverse)
 library(plotly)
+<<<<<<< HEAD
 library(tidyverse)
 library(spotifyr)
 library(compmus)
 library(cowplot)
+=======
+
+>>>>>>> 5f953b98b27a38c626e7657d505df23b8a2a09c6
 gabriel_pt.2 <- get_tidy_audio_analysis("6NQWrfcUZdY3NG3l8WGKur") %>%
   select(segments) %>%
   unnest(segments) %>%
@@ -93,9 +97,12 @@ ggplotly(p) %>%
 
 An important part of Espana Circo Este sound are reggae and latin/american inspired musics. I'm now comparing the songs "Gabriel Pt.2" and " La Cosa Giusta", from their second and third records. This two tracks has are deeply inspired by reggae music, and features the characteristics of the genre. I think it's interesting to notice that in the oldest songs there are lots of peaks in loudness, while the newest one is more unified, probably because of the much more modern and compressed master that this track got.
 The enormous peack in the begging of Gabriel Pt.2 is due to the track being the second part of a previous one, Gabriel Pt.1, that has a direct and violent transition to Gabriel Pt.2
+<<<<<<< HEAD
 
 
 
+=======
+>>>>>>> 5f953b98b27a38c626e7657d505df23b8a2a09c6
 
 ### Chordgram Intro
 
@@ -377,6 +384,22 @@ ggplot(ecedisco, aes(x = key, fill = as.factor(mode))) +
   theme(legend.position = "bottom")
 
 ```
+
+### Tempo Histogram
+
+```{r}
+# Create the histogram plot with tempo instead of key without mode legend
+ggplot(ecedisco, aes(x = tempo)) +
+  geom_tile(stat = "count", color = "black", size = 0.5, aes(fill = as.factor(mode))) +
+  facet_wrap(~category) +
+  labs(x = "Tempo", y = "Count") +  # Change x-axis label to "Tempo"
+  scale_x_continuous(breaks = seq(0, max(ecedisco$tempo), by = 10)) +  # Adjust breaks for tempo
+  scale_y_continuous(breaks = seq(0, max(table(ecedisco$tempo)), by = 1)) +
+  theme(legend.position = "none")  # Remove the legend
+
+
+```
+
 
 ***
 
