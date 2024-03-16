@@ -372,6 +372,22 @@ ggplot(ecedisco, aes(x = key, fill = as.factor(mode))) +
 
 ```
 
+### Tempo Histogram
+
+```{r}
+# Create the histogram plot with tempo instead of key without mode legend
+ggplot(ecedisco, aes(x = tempo)) +
+  geom_tile(stat = "count", color = "black", size = 0.5, aes(fill = as.factor(mode))) +
+  facet_wrap(~category) +
+  labs(x = "Tempo", y = "Count") +  # Change x-axis label to "Tempo"
+  scale_x_continuous(breaks = seq(0, max(ecedisco$tempo), by = 10)) +  # Adjust breaks for tempo
+  scale_y_continuous(breaks = seq(0, max(table(ecedisco$tempo)), by = 1)) +
+  theme(legend.position = "none")  # Remove the legend
+
+
+```
+
+
 ***
 
 I used this graph to point out dome differences in the composition of the first two studio albums and the latest two. I think that the first thing that we can notice is the lack of minor key song in the latest project: as I said before, this two records had a shift in composition, to a more pop and mellow sound.
