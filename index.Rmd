@@ -9,6 +9,9 @@ output:
     fig_width: 6  # 100
     fig_height: 4  # 100
 ---
+
+
+
 ### Homework week 11
 
 ```{r}
@@ -575,9 +578,15 @@ On the other hand the 2023 version shows a more various palette of sections. The
 
 
 
+### Homework week 11
+
+```{r}
+library(spotifyr)
+```
 
 
-
+***
+test
 
 
 
